@@ -1,6 +1,6 @@
-# ESP to BigQuery - Banking Transactions Loader
+# ESP to BigQuery - Event Streaming Loader
 
-This project implements loading JSON data (banking transaction examples) into Google BigQuery.
+This project implements loading event data into Google BigQuery for real-time analytics and dashboards.
 
 ## Prerequisites
 
@@ -37,11 +37,25 @@ This project implements loading JSON data (banking transaction examples) into Go
    python main.py
    ```
 
-   The script will automatically create the table if it doesn't exist, and append new data each time it runs.
+   The script will automatically create the table if it doesn't exist, and stream new event data each time it runs.
+
+## Table Structure
+
+The BigQuery table is created with the following schema and optimizations:
+
+- **Schema**:
+  - `event_id` (STRING, REQUIRED)
+  - `event_type` (STRING, REQUIRED)
+  - `user_id` (STRING)
+  - `country` (STRING)
+  - `event_timestamp` (TIMESTAMP, REQUIRED)
+
+- **Partitioning**: By `event_timestamp` (daily partitions)
+- **Clustering**: By `event_type` and `country` for efficient queries
 
 ## Functions
 
-- `get_esp_data()`: Placeholder for fetching data from ESP. Currently falls back to demo data. Implement this when ESP integration is ready.
+- `get_esp_data()`: Returns sample event data for testing. Replace with actual ESP data fetching logic when ready.
 
 ## Reference
 
