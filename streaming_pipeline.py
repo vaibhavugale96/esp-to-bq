@@ -2,6 +2,8 @@ import os
 import json
 import uuid
 import time
+import threading
+import random
 from datetime import datetime, timezone
 
 from google.cloud import bigquery, pubsub_v1
@@ -61,15 +63,20 @@ def setup_pubsub():
 # 2. GENERATE MOCK EVENT
 # =========================
 def generate_event():
+    page_urls = ["/home", "/products", "/checkout", "/about", "/contact"]
+    countries = ["US", "IN", "UK", "CA", "AU"]
+    device_types = ["mobile", "desktop", "tablet", "laptop"]
+    event_types = ["click", "view", "submit"]
+
     return {
         "event_id": str(uuid.uuid4()),
-        "event_type": "click",
+        "event_type": random.choice(event_types),
         "user_id": f"user_{uuid.uuid4().hex[:5]}",
         "session_id": f"sess_{uuid.uuid4().hex[:5]}",
-        "page_url": "/home",
+        "page_url": random.choice(page_urls),
         "referrer": "google",
-        "device_type": "mobile",
-        "country": "IN",
+        "device_type": random.choice(device_types),
+        "country": random.choice(countries),
         "event_timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -85,9 +92,10 @@ def publish_events():
         data = json.dumps(event).encode("utf-8")
 
         publisher.publish(topic_path, data)
-        print(f"📤 Published: {event['event_id']}")
+        print(f"📤 Published: {event['event_id']}\n")
 
-        time.sleep(3)
+
+        time.sleep(10)
 
 
 # =========================
@@ -126,8 +134,6 @@ if __name__ == "__main__":
     print("🚀 Starting streaming pipeline...")
 
     setup_pubsub()
-
-    import threading
 
     # Start publisher in background thread
     threading.Thread(target=publish_events, daemon=True).start()
