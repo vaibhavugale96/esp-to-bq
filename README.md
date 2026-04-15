@@ -5,6 +5,18 @@ This project includes two pipelines:
 - `main.py`: direct BigQuery streaming loader that inserts event data via the BigQuery API.
 - `streaming_pipeline.py`: Pub/Sub-based real-time pipeline that publishes events to Pub/Sub and inserts them into BigQuery via a subscription.
 
+## Current POC Architecture
+
+🟡 CURRENT (POC you built)
+
+Python Event Generator (Mock ESP)
+        ↓
+Pub/Sub Topic
+        ↓
+Python Subscriber (Callback Consumer)
+        ↓
+BigQuery Table
+
 ## Prerequisites
 
 - Google Cloud account with BigQuery and Pub/Sub enabled
