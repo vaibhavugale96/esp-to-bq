@@ -1,11 +1,14 @@
 # ESP to BigQuery - Event Streaming Loader
 
-This project implements loading event data into Google BigQuery for real-time analytics and dashboards.
+This project includes two pipelines:
+
+- `main.py`: direct BigQuery streaming loader that inserts event data via the BigQuery API.
+- `streaming_pipeline.py`: Pub/Sub-based real-time pipeline that publishes events to Pub/Sub and inserts them into BigQuery via a subscription.
 
 ## Prerequisites
 
-- Google Cloud account with BigQuery enabled
-- Service account key with BigQuery permissions
+- Google Cloud account with BigQuery and Pub/Sub enabled
+- Service account key with BigQuery and Pub/Sub permissions
 - Python 3.x
 
 ## Setup
@@ -16,28 +19,48 @@ This project implements loading event data into Google BigQuery for real-time an
    ```
 
 2. Create a `.env` file in the project root with your configuration:
-   ```
+   ```dotenv
    PROJECT_ID=your-project-id
    DATASET_ID=your-dataset-id
    TABLE_ID=your-table-id
+   TOPIC_ID=your-pubsub-topic-id
+   SUBSCRIPTION_ID=your-subscription-id
    CREDENTIALS_PATH=path/to/your/service-account-key.json
    ```
 
 3. Set up authentication:
    - Download your service account key JSON file.
-   - Update the `CREDENTIALS_PATH` in `.env` with the path to your key file.
-   - **Security Warning**: Avoid committing the `.env` file or key files to version control. Add them to `.gitignore`.
+   - Update `CREDENTIALS_PATH` in `.env` with the path to your key file.
+   - **Security Warning**: Avoid committing `.env` or key files to version control. Add them to `.gitignore`.
+
+4. Set up Pub/Sub and BigQuery subscription:
+   - Create a Pub/Sub topic with the ID from `TOPIC_ID`.
+   - Create a Pub/Sub subscription with the ID from `SUBSCRIPTION_ID`.
+   - Configure the subscription to deliver messages to BigQuery, or use the local subscriber in `streaming_pipeline.py` to insert rows directly.
 
 ## Usage
 
-1. Update the configuration in `.env` if needed (default table is 'transactions').
+### 1. Direct BigQuery streaming (`main.py`)
 
-2. Run the script:
-   ```
-   python main.py
-   ```
+Run the direct API loader:
+```bash
+python main.py
+```
 
-   The script will automatically create the table if it doesn't exist, and stream new event data each time it runs.
+This will create the target BigQuery table if needed and insert sample event rows directly.
+
+### 2. Pub/Sub real-time pipeline (`streaming_pipeline.py`)
+
+Run the streaming pipeline:
+```bash
+python streaming_pipeline.py
+```
+
+This script will:
+- ensure the Pub/Sub topic exists
+- ensure the Pub/Sub subscription exists
+- publish events to the topic continuously
+- listen on the subscription and insert received messages into BigQuery
 
 ## Table Structure
 
@@ -47,15 +70,21 @@ The BigQuery table is created with the following schema and optimizations:
   - `event_id` (STRING, REQUIRED)
   - `event_type` (STRING, REQUIRED)
   - `user_id` (STRING)
+  - `session_id` (STRING)
+  - `page_url` (STRING)
+  - `referrer` (STRING)
+  - `device_type` (STRING)
   - `country` (STRING)
   - `event_timestamp` (TIMESTAMP, REQUIRED)
 
-- **Partitioning**: By `event_timestamp` (daily partitions)
-- **Clustering**: By `event_type` and `country` for efficient queries
+- **Partitioning**: by `event_timestamp` (daily partitions)
+- **Clustering**: by `event_type` and `country`
 
-## Functions
+## Notes
 
-- `get_esp_data()`: Returns sample event data for testing. Replace with actual ESP data fetching logic when ready.
+- `main.py` is intended for direct event loading into BigQuery.
+- `streaming_pipeline.py` is intended for real-time Pub/Sub ingestion and local subscription processing.
+- Use `streaming_pipeline.py` when you want real-time event publishing every few seconds.
 
 ## Reference
 

@@ -1,6 +1,7 @@
 import os
 import uuid
 import datetime
+from datetime import timezone
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.cloud.exceptions import NotFound
@@ -23,7 +24,7 @@ def get_event_data():
             "referrer": "google.com",
             "device_type": "mobile",
             "country": "IN",
-            "event_timestamp": datetime.datetime.utcnow().isoformat(),
+            "event_timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         },
         {
             "event_id": str(uuid.uuid4()),
@@ -34,7 +35,7 @@ def get_event_data():
             "referrer": "direct",
             "device_type": "desktop",
             "country": "US",
-            "event_timestamp": datetime.datetime.utcnow().isoformat(),
+            "event_timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         }
     ]
 
